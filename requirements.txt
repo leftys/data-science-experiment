@@ -1,0 +1,5 @@
+dask[distributed,dataframe,fastparquet]==2.9.0
+numba==0.46.0
+streamz==0.5.2
+joblib==0.14.0
+metaflow==2.0.0
