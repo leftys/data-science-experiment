@@ -1,5 +1,6 @@
-dask[distributed,dataframe,fastparquet]==2.9.0
-numba==0.46.0
+dask[distributed,dataframe]==2.9.0
+# numba==0.46.0 # this requires llvm-8-dev package and setting LLVM_
 streamz==0.5.2
 joblib==0.14.0
 metaflow==2.0.0
+jupyter==1.0.0
