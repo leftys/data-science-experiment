@@ -4,3 +4,5 @@ streamz==0.5.2
 joblib==0.14.0
 metaflow==2.0.0
 jupyter==1.0.0
+numpy==1.17.4
+pandas==0.25.3
