@@ -1,7 +1,5 @@
 from typing import cast, List
 
-import resource
-
 from metaflow import FlowSpec, step, resources
 import pandas as pd
 import numpy as np
@@ -38,14 +36,12 @@ class MyFlow(FlowSpec):
         print(trades.memory_usage(deep = True).sum())
 
         self.trades = trades
-        print('Memory usage after', resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
 
         self.next(self.split)
 
 
     @step
     def split(self):
-        print('Memory usage before', resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
         self.trades_per_instrument_and_day: List[pd.DataFrame] = []
         for instrument in self.trades.index.get_level_values('instrument').unique():
             for date in self.trades.index.get_level_values('date').unique():
@@ -53,7 +49,6 @@ class MyFlow(FlowSpec):
                     self.trades.loc[[instrument, date, None]]
                 )
 
-        print('Memory usage after', resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
         self.next(self.per_instrument_and_day, foreach = 'trades_per_instrument_and_day')
 
 
@@ -61,28 +56,22 @@ class MyFlow(FlowSpec):
     @step
     def per_instrument_and_day(self):
         ''' Process single day on single instrument. '''
-        print('Memory usage before', resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
         self.instrument_trades = cast(pd.DataFrame, self.input).copy()
         # Just an example computation of traded volume. This could actually be done just with groupby(day, instrument)
         self.instrument_trades['traded_volume'] = \
             self.instrument_trades['quantity'].abs().cumsum()
-        print('Memory usage after', resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
         self.next(self.join)
 
 
     @step
     def join(self, inputs):
-        print('Memory usage before', resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
         self.results = pd.concat([input.instrument_trades for input in inputs])
-        print('Memory usage after', resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
         self.next(self.end)
 
 
     @step
     def end(self):
-        print('Memory usage before', resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
         print(self.results)
-        print('Memory usage after', resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
 
 
 
