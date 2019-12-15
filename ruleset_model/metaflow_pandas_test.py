@@ -15,12 +15,12 @@ class MyFlow(FlowSpec):
         number_of_days = 10
         nanoseconds_per_row = (number_of_days * 24 * 60 * 60 * 1e9) / row_number
 
-        # dask arrays containing columns
+        # numpy arrays containing columns
         times = (np.ones((row_number,), dtype = 'int') * nanoseconds_per_row).cumsum(axis = 0) - 1
         prices = np.ones((row_number,)).cumsum(axis = 0)
         quantities = (np.random.random((row_number,)) * 100).round(0).astype('int32') # pylint: disable = no-member
 
-        # dask dataframe
+        # set up dataframe
         trades = pd.DataFrame(
             data = {'time': times, 'price': prices, 'quantity': quantities},
         )
