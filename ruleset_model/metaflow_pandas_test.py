@@ -48,7 +48,7 @@ class MyFlow(FlowSpec):
                 self.trades_per_instrument_and_day.append(
                     self.trades.loc[[instrument, date, None]]
                 )
-
+        del self.trades
         self.next(self.per_instrument_and_day, foreach = 'trades_per_instrument_and_day')
 
 
@@ -56,7 +56,7 @@ class MyFlow(FlowSpec):
     @step
     def per_instrument_and_day(self):
         ''' Process single day on single instrument. '''
-        self.instrument_trades = cast(pd.DataFrame, self.input).copy()
+        self.instrument_trades = cast(pd.DataFrame, self.input)
         # Just an example computation of traded volume. This could actually be done just with groupby(day, instrument)
         self.instrument_trades['traded_volume'] = \
             self.instrument_trades['quantity'].abs().cumsum()
