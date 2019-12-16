@@ -26,28 +26,29 @@ class MyFlow(FlowSpec):
         )
         del times, prices, quantities
         trades['time'] = pd.to_datetime(trades['time'])
-        trades['date'] = trades.time.dt.date #.astype('|S10')
-        trades['instrument'] = pd.Series(['GARAN'], dtype = 'category')
+        trades['date'] = trades.time.dt.round('D').astype('datetime64[s]')
+        trades['instrument'] = 'GARAN'
+        trades['instrument'] = trades['instrument'].astype('category')
         print(trades.dtypes)
         trades = trades.set_index(['date', 'instrument', 'time'])
 
         print(trades.head(10))
         print(trades.memory_usage(deep = True).head(100))
-        print(trades.memory_usage(deep = True).sum())
+        print(trades.memory_usage(deep = True).sum() / 1e6, 'MB')
 
         self.trades = trades
-
         self.next(self.split)
 
 
     @step
     def split(self):
         self.trades_per_instrument_and_day: List[pd.DataFrame] = []
-        for instrument in self.trades.index.get_level_values('instrument').unique():
-            for date in self.trades.index.get_level_values('date').unique():
+        for date in self.trades.index.get_level_values('date').unique():
+            for instrument in self.trades.index.get_level_values('instrument').unique():
                 self.trades_per_instrument_and_day.append(
-                    self.trades.loc[[instrument, date, None]]
+                    self.trades.loc[[date, instrument]]
                 )
+        print('Per instrument slice is view =', self.trades_per_instrument_and_day[-1]._is_view)
         del self.trades
         self.next(self.per_instrument_and_day, foreach = 'trades_per_instrument_and_day')
 
