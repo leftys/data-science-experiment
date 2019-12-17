@@ -67,6 +67,7 @@ def check_dataframes(
                 print(obj)
             if show_dtypes:
                 print('\tDtypes =', str(dict(obj.dtypes)))
+            # TODO: check if some series aren't sparse to recommend sparse storage
             already_printed_base_addresses.append(id(obj.values.base))
 
             dtypes = obj.dtypes
