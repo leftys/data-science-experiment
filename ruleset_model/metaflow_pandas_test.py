@@ -4,6 +4,8 @@ from metaflow import FlowSpec, step, resources
 import pandas as pd
 import numpy as np
 
+from ruleset_model.performance import check_dataframes
+
 
 
 class MyFlow(FlowSpec):
@@ -37,6 +39,7 @@ class MyFlow(FlowSpec):
         print(trades.memory_usage(deep = True).sum() // 1e6, 'MB')
 
         self.trades = trades
+        check_dataframes()
         self.next(self.split)
 
 
@@ -53,6 +56,7 @@ class MyFlow(FlowSpec):
                 )
         print('Per instrument slice is view =', self.trades_per_instrument_and_day[-1]._is_view)
         del self.trades
+        check_dataframes()
         self.next(self.per_instrument_and_day, foreach = 'trades_per_instrument_and_day')
 
 
@@ -64,18 +68,21 @@ class MyFlow(FlowSpec):
         # Just an example computation of traded volume. This could actually be done just with groupby(day, instrument)
         self.instrument_trades['traded_volume'] = \
             self.instrument_trades['quantity'].abs().cumsum()
+        check_dataframes()
         self.next(self.join)
 
 
     @step
     def join(self, inputs):
         self.results = pd.concat([input.instrument_trades for input in inputs])
+        check_dataframes()
         self.next(self.end)
 
 
     @step
     def end(self):
         print(self.results)
+        check_dataframes()
 
 
 
